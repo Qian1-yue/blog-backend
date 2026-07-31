@@ -1,49 +1,149 @@
 package com.example.blogbackend.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.blogbackend.dto.CreateUserRequest;
+import com.example.blogbackend.dto.UpdateUserRequest;
 import com.example.blogbackend.entity.UserEntity;
+import com.example.blogbackend.mapper.UserMapper;
+import com.example.blogbackend.vo.PageResponse;
 import com.example.blogbackend.vo.UserResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserService {
-    private final Map<Long, UserEntity> users = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(0);
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserResponse createUser(CreateUserRequest request) {
-        Long id = idGenerator.incrementAndGet();
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+        this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-        UserEntity user = new UserEntity(
-                id,
-                request.username(),
-                request.nickname()
-        );
+    public UserResponse getUserById(Long id) {
+        UserEntity user = userMapper.selectById(id);
 
-        users.put(id, user);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
         return convertToResponse(user);
     }
 
-    public Optional<UserResponse> findById(Long id) {
-        UserEntity user = users.get(id);
+    public UserResponse createUser(CreateUserRequest request) {
+        String username = request.username().trim();
 
-        if (user == null) {
-            return Optional.empty();
+        UserEntity existingUser = userMapper.selectByUsername(username);
+
+        if (existingUser != null) {
+            throw new IllegalStateException("用户名已存在");
         }
 
-        return Optional.of(convertToResponse(user));
+        LocalDateTime now  = LocalDateTime.now();
+
+        UserEntity user = new UserEntity();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setNickname(request.nickname().trim());
+        user.setStatus(1);
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
+
+        int affectRows = userMapper.insert(user);
+
+        if (affectRows != 1) {
+            throw new IllegalStateException("用户创建失败");
+        }
+        return convertToResponse(user);
     }
 
+    public UserResponse updateUser(Long id, UpdateUserRequest request) {
+        UserEntity existingUser = userMapper.selectById(id);
+
+        if (existingUser == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+            UserEntity updateEntity = new UserEntity();
+            updateEntity.setId(id);
+            updateEntity.setNickname(request.nickname().trim());
+            updateEntity.setStatus(request.status());
+            updateEntity.setUpdateTime(LocalDateTime.now());
+
+            int affectRows = userMapper.updateById(updateEntity);
+
+            if (affectRows != 1) {
+                throw new IllegalStateException("用户修改失败");
+            }
+            return getUserById(id);
+    }
+    public void deleteUser(Long id) {
+        UserEntity existingEntity = userMapper.selectById(id);
+
+        if (existingEntity == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        int affectRows = userMapper.deleteById(id);
+
+        if (affectRows != 1) {
+            throw new IllegalStateException("用户删除失败");
+        }
+    }
     private UserResponse convertToResponse(UserEntity user) {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),
-                user.getNickname()
+                user.getNickname(),
+                user.getStatus(),
+                user.getCreateTime(),
+                user.getUpdateTime()
+        );
+    }
+
+    public PageResponse<UserResponse> listUsers(
+            long current,
+            long size,
+            String username,
+            Integer status) {
+
+        Page<UserEntity> page =
+                new Page<>(current, size);
+
+        LambdaQueryWrapper<UserEntity> wrapper =
+                new LambdaQueryWrapper<>();
+
+        wrapper.like(
+                        StringUtils.hasText(username),
+                        UserEntity::getUsername,
+                        username
+                )
+                .eq(
+                        status != null,
+                        UserEntity::getStatus,
+                        status
+                )
+                .orderByDesc(UserEntity::getCreateTime);
+
+        IPage<UserEntity> entityPage =
+                userMapper.selectPage(page, wrapper);
+
+        List<UserResponse> records =
+                entityPage.getRecords()
+                        .stream()
+                        .map(this::convertToResponse)
+                        .toList();
+
+        return new PageResponse<>(
+                entityPage.getCurrent(),
+                entityPage.getSize(),
+                entityPage.getTotal(),
+                entityPage.getPages(),
+                records
         );
     }
 }
