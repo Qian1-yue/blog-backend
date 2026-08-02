@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.blogbackend.dto.CreateUserRequest;
 import com.example.blogbackend.dto.UpdateUserRequest;
 import com.example.blogbackend.entity.UserEntity;
+import com.example.blogbackend.exception.BusinessException;
 import com.example.blogbackend.mapper.UserMapper;
 import com.example.blogbackend.vo.PageResponse;
 import com.example.blogbackend.vo.UserResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -30,7 +32,10 @@ public class UserService {
         UserEntity user = userMapper.selectById(id);
 
         if (user == null) {
-            throw new IllegalArgumentException("用户不存在");
+            throw new BusinessException(
+        HttpStatus.NOT_FOUND,
+        "用户不存在"
+);
         }
         return convertToResponse(user);
     }
@@ -41,7 +46,10 @@ public class UserService {
         UserEntity existingUser = userMapper.selectByUsername(username);
 
         if (existingUser != null) {
-            throw new IllegalStateException("用户名已存在");
+            throw new BusinessException(
+        HttpStatus.CONFLICT,
+        "用户名已存在"
+);
         }
 
         LocalDateTime now  = LocalDateTime.now();
@@ -57,7 +65,10 @@ public class UserService {
         int affectRows = userMapper.insert(user);
 
         if (affectRows != 1) {
-            throw new IllegalStateException("用户创建失败");
+            throw new BusinessException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "用户创建失败"
+);
         }
         return convertToResponse(user);
     }
@@ -66,7 +77,10 @@ public class UserService {
         UserEntity existingUser = userMapper.selectById(id);
 
         if (existingUser == null) {
-            throw new IllegalArgumentException("用户不存在");
+            throw new BusinessException(
+        HttpStatus.NOT_FOUND,
+        "用户不存在"
+);
         }
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(id);
@@ -85,7 +99,10 @@ public class UserService {
         UserEntity existingEntity = userMapper.selectById(id);
 
         if (existingEntity == null) {
-            throw new IllegalArgumentException("用户不存在");
+            throw new BusinessException(
+        HttpStatus.NOT_FOUND,
+        "用户不存在"
+);
         }
 
         int affectRows = userMapper.deleteById(id);
