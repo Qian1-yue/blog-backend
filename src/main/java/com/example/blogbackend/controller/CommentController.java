@@ -2,7 +2,6 @@ package com.example.blogbackend.controller;
 
 import com.example.blogbackend.common.Result;
 import com.example.blogbackend.dto.CreateCommentRequest;
-import com.example.blogbackend.security.LoginRequired;
 import com.example.blogbackend.security.UserContext;
 import com.example.blogbackend.service.CommentService;
 import com.example.blogbackend.vo.CommentResponse;
@@ -15,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/article/{articleId}/comments")
+@RequestMapping("/api/articles/{articleId}/comments")
 @Validated
 public class CommentController {
     private final CommentService commentService;
@@ -24,7 +23,6 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @LoginRequired
     @PostMapping
     public ResponseEntity<Result<CommentResponse>> createComment(
             @PathVariable Long articleId,

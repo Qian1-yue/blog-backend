@@ -7,12 +7,14 @@ import com.example.blogbackend.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
+@Import(TestContainersConfiguration.class)
 class UserMapperTest {
     private final UserMapper userMapper;
 
@@ -27,14 +29,6 @@ class UserMapperTest {
 
         assertNotNull(users);
 
-        users.forEach(user ->
-                System.out.println(
-                        user.getId() + " " +
-                        user.getUsername() + " " +
-                        user.getNickname()
-                )
-
-        );
     }
 
     @Test

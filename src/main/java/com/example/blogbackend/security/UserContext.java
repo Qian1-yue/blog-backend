@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 public final class UserContext {
     private static final ThreadLocal<LoginSession> SESSION_HOLDER = new ThreadLocal<>();
 
-    public UserContext() {
+    private UserContext() {
     }
 
     public static void set(LoginSession session) {

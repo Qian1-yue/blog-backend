@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Map;
+import java.util.Objects;
 
 
 @RestControllerAdvice
@@ -83,4 +85,31 @@ public class GlobalExceptionHandler {
                         "服务器内部错误"
                 ));
     }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Result<Map<String, Object>>>
+    handleHandlerMethodValidationException(
+            HandlerMethodValidationException exception) {
+
+        String message = exception
+                .getParameterValidationResults()
+                .stream()
+                .flatMap(result ->
+                        result.getResolvableErrors().stream()
+                )
+                .map(error -> error.getDefaultMessage())
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse("请求参数不正确");
+
+        return ResponseEntity
+                .badRequest()
+                .body(
+                        Result.<Map<String, Object>>failure(
+                                400,
+                                message
+                        )
+                );
+    }
+
 }

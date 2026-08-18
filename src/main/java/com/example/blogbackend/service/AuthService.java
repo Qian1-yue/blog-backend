@@ -125,6 +125,28 @@ public class AuthService {
         );
 
     }
+
+    public void logout(String token) {
+        tokenService.removeToken(token);
+    }
+
+    public LoginUserResponse getCurrentUser(Long userId) {
+        UserEntity user = userMapper.selectById(userId);
+
+        if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
+            throw new BusinessException(
+                    HttpStatus.UNAUTHORIZED,
+                    "登录用户不存在或已被禁用"
+            );
+        }
+
+        return new LoginUserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getNickname()
+        );
+    }
+
     private UserResponse convertToUserResponse(
             UserEntity user) {
 

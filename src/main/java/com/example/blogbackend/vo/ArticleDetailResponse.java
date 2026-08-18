@@ -2,7 +2,7 @@ package com.example.blogbackend.vo;
 
 import java.time.LocalDateTime;
 
-public record AirticleDetailResponse(
+public record ArticleDetailResponse(
         Long id,
         String title,
         String summary,

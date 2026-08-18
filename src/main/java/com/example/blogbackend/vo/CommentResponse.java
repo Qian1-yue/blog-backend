@@ -7,6 +7,6 @@ public record CommentResponse(
         String content,
         Long userId,
         String userNickname,
-        LocalDateTime creatTime
+        LocalDateTime createTime
 ) {
 }
