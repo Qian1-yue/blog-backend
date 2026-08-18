@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.vscode
+*.iml
+*.log
+.env
+frontend
+database
+target
+HELP.md
+README.md
+package-lock.json
