@@ -80,6 +80,10 @@ SITE_ADDRESS=blog.example.com
 重新执行 `docker compose up -d` 后，Caddy 会自动申请并续期 HTTPS 证书。
 MySQL 和 Redis 没有暴露公网端口，只能从 Compose 内部网络访问。
 
+生产容器统一使用 `Asia/Shanghai`：MySQL 默认会话时区为 `+08:00`，
+Java 通过 `JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Shanghai` 固定业务时区。
+不要只在前端给时间加 8 小时；否则换浏览器、换部署地区或重复格式化时会再次出错。
+
 代码通过 Git 部署后，后续更新可在服务器执行：
 
 ```bash

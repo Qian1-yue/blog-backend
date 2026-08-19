@@ -15,6 +15,8 @@ WORKDIR /app
 
 COPY --from=builder /workspace/target/blog-backend-*.jar app.jar
 
+ENV TZ="Asia/Shanghai"
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Shanghai"
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
 
 USER blog

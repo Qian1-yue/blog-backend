@@ -4,7 +4,10 @@ services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
+    command:
+      - "--default-time-zone=+08:00"
     environment:
+      TZ: Asia/Shanghai
       MYSQL_DATABASE: blog
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在.env中设置MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${DB_USERNAME:-blog_app}
@@ -62,6 +65,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      TZ: Asia/Shanghai
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Shanghai
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:mysql://mysql:3306/blog?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: ${DB_USERNAME:-blog_app}
