@@ -70,6 +70,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:?请在.env中设置REDIS_PASSWORD}
       SERVER_PORT: 8080
+      #修改时间2026‑08‑18
       JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Duser.timezone=Asia/Shanghai}
     expose:
       - "8080"
